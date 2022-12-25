@@ -1,10 +1,61 @@
 #include "src/socket.hpp"
 #include <system_error>
+#include <pthread.h>
 
 // -- Portul pentru conectarea la server
 int PORT = 1111;           // -- Voi folosi portul "1111" pentru serverul meu
 char IP[16] = "127.0.0.1"; // -- Voi folosi IP-ul "127.0.0.1" pentru serverul meu
+bool IS_USER_DISCONNECTED = false;
 
+// -- Declararea functiilor
+void sendMessageToServer(std::string message, socklen_t server_descriptor);
+std::string getInputFromUser();
+std::string getResponseFromServer(socklen_t server_descriptor);
+static void *threadReceiveMessageFromServer(void *arg);
+
+int main(int argc, const char *argv[])
+{
+
+    // -- Crearea unui socket pentru client
+    Socket client_socket(PORT, IP);
+
+    // -- Creeam un thread pentru a primi informatii de la server
+    pthread_t thread_id;
+
+    // -- Crearea thread-ului pentru procesarea fiecarui client in parte
+    if (pthread_create(&thread_id, NULL, threadReceiveMessageFromServer, (void *)&client_socket) < 0)
+    {
+        std::error_code ec(client_socket.getFD(), std::generic_category());
+        std::cerr << "Eroare la crearea thread-ului: " << ec.message() << std::endl;
+        exit(1);
+    }
+
+    // -- Creeam o bucla infinita pentru a trimite mesaje spre serverul
+    while (true)
+    {
+        // -- Afisam prompt-ul pentru comanda
+        std::cout << "$ > ";
+
+        // -- Citim comanda de la tastatura
+        std::string command = getInputFromUser();
+
+        // -- Verificare commanda de exit
+        if (command == "exit")
+        {
+            IS_USER_DISCONNECTED = true;
+            break;
+        }
+        else if (command.size() == 0)
+        {
+            continue;
+        }
+        // -- Trimitem comanda catre server
+        sendMessageToServer(command, client_socket.getFD());
+    }
+    return 0;
+}
+
+// -- Functie pentru trimiterea mesajului catre server
 void sendMessageToServer(std::string message, socklen_t server_descriptor)
 {
     // -- Trimitem mesajul catre server
@@ -27,7 +78,12 @@ std::string getResponseFromServer(socklen_t server_descriptor)
     int read_size = read(server_descriptor, buffer, 1024);
 
     // -- Verificam daca s-a primit raspuns de la server
-    if (read_size < 0)
+    if (IS_USER_DISCONNECTED)
+    {
+        std::cout << "Ati fost deconectat de la server!" << std::endl;
+        exit(0);
+    }
+    else if (read_size < 0)
     {
         std::error_code ec(read_size, std::generic_category());
         std::cerr << "Eroare la primirea raspunsului de la server: " << ec.message() << std::endl;
@@ -40,37 +96,20 @@ std::string getResponseFromServer(socklen_t server_descriptor)
     return response;
 }
 
-int main(int argc, const char *argv[])
+// -- Functie pentru procesarea mesajelor primite de la server
+static void *threadReceiveMessageFromServer(void *arg)
 {
+    // -- Castam argumentul la un socket
+    Socket *client_socket = (Socket *)arg;
 
-    // -- Crearea unui socket pentru client
-    Socket client_socket(PORT, IP);
-    // -- Creeam o bucla infinita pentru a comunica cu serverul
+    // -- Creem o bucla infinita pentru a primi mesaje de la server
     while (true)
     {
-        // -- Afisam prompt-ul pentru comanda
-        std::cout << "$ > ";
+        // -- Primim mesajul de la server
+        std::string response = getResponseFromServer(client_socket->getFD());
 
-        // -- Citim comanda de la tastatura
-        std::string command = getInputFromUser();
-
-        // -- Verificare commanda de exit
-        if (command == "exit")
-        {
-            break;
-        }
-        else if (command.size() == 0)
-        {
-            continue;
-        }
-        // -- Trimitem comanda catre server
-        sendMessageToServer(command, client_socket.getFD());
-
-        // -- Primim un raspuns de la server
-        std::string response = getResponseFromServer(client_socket.getFD());
-
-        // -- Afisam raspunsul primit de la server
-        std::cout << response << std::endl;
+        // -- Afisam mesajul primit de la server
+        std::cout << "\n$ < " << response << std::endl
+                  << "$ > ";
     }
-    return 0;
 }

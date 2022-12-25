@@ -29,6 +29,8 @@ void User::sendMessage(std::string message)
 {
     // -- Trimitem mesajul catre client
     write(this->ID, message.c_str(), message.size());
+
+    std::cout << "Mesajul a fost trimis catre client" << std::endl;
 }
 
 // -- Functie pentru primirea unui mesaj de la client

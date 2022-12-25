@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <vector>
 #include <map>
+#include <sstream>
 
 // -- Portul pentru conectarea la server
 int PORT = 1111;           // -- Voi folosi portul "1111" pentru serverul meu
@@ -10,9 +11,10 @@ char IP[16] = "127.0.0.1"; // -- Voi folosi IP-ul "127.0.0.1" pentru serverul me
 
 // -- Declararea functiilor
 static void *threadServeClient(void *arg);
+void processCommand(std::string command, User *user);
 
-// -- Declaram un map pentru a stoca userii
-std::map<socklen_t, User> users;
+// -- Declaram un vector pentru a stoca userii
+std::vector<User> users;
 
 // -- Functia main
 int main()
@@ -26,8 +28,8 @@ int main()
         // -- Acceptam un nou client
         User user(server_socket.getFD());
 
-        // -- Adaugam user-ul in map
-        users.insert(std::pair<socklen_t, User>(user.getID(), user));
+        // -- Adaugam user-ul in vectorul de useri
+        users.push_back(user);
 
         // -- Declarearea thread-ului pentru procesarea fiecarui client in parte
         pthread_t thread_id;
@@ -40,7 +42,7 @@ int main()
             exit(1);
         }
 
-        // -- Stergem thread-ul cand nu mai este nevoie de el
+        // -- Detacham thread-ul pentru a il face independent
         pthread_detach(thread_id);
     }
     return 0;
@@ -65,9 +67,27 @@ static void *threadServeClient(void *arg)
             break;
         }
 
-        // -- Afisam mesajul primit de la client
-        std::cout << "Clientul " << user->getID() << " a trimis mesajul: " << message << std::endl;
+        // -- Prelucrare commanda de la client
+        processCommand(message, user);
     }
 
     return 0;
+}
+
+void processCommand(std::string command, User *user)
+{
+    // -- Spargerea stringului in cuvinte si stocarea lor intr-un vector
+    std::vector<std::string> words;
+    std::stringstream ss(command);
+    std::string word;
+    while (ss >> word)
+    {
+        words.push_back(word);
+    }
+
+    // -- Verificarile primelor cuvinte din vector pentru a indentifica comenzi
+    if (words.at(0) == ":say")
+    {
+        user->sendMessage("Buna, sunt serverul OFFLINE MESSENGER");
+    }
 }
