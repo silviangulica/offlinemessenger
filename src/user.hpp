@@ -32,9 +32,24 @@ public:
     // -- Returneaza ID-ul user-ului
     socklen_t getID();
 
+    // -- Returneaza parola userului
+    std::string getPassword();
+
+    // -- Seteaza parola userului
+    void setPassword(std::string password);
+
+    // -- Returneaza daca user-ul este logat sau nu
+    bool isLogged();
+
+    // -- Seteaza daca user-ul este logat sau nu
+    void setLogged(bool logged);
+
 private:
     socklen_t ID;
     std::string username;
+    std::string password;
+    bool logged;
+
     sockaddr_in user_details;
     int user_details_length;
 };

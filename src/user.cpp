@@ -16,6 +16,8 @@ User::User(socklen_t server_socket)
         std::cerr << "Eroare la accept: " << ec.message() << std::endl;
         exit(1);
     }
+
+    this->logged = false;
 }
 
 // -- Functie pentru returnarea ID-ului userului
@@ -36,8 +38,8 @@ void User::sendMessage(std::string message)
 // -- Functie pentru primirea unui mesaj de la client
 std::string User::getMessage()
 {
-    char buffer[1024];
-    int read_size = read(this->ID, buffer, 1024);
+    char buffer[2048];
+    int read_size = read(this->ID, buffer, 2048);
 
     // -- Verificam daca s-a primit mesaj de la client
     if (read_size < 0)
@@ -55,4 +57,40 @@ std::string User::getMessage()
     std::string message = std::string(buffer, 0, read_size);
 
     return message;
+}
+
+// -- Functie pentru returnarea username-ului userului
+std::string User::getUsername()
+{
+    return this->username;
+}
+
+// -- Functie pentru setarea username-ului userului
+void User::setUsername(std::string username)
+{
+    this->username = username;
+}
+
+// -- Functie pentru returnarea parolei userului
+std::string User::getPassword()
+{
+    return this->password;
+}
+
+// -- Functie pentru setarea parolei userului
+void User::setPassword(std::string password)
+{
+    this->password = password;
+}
+
+// -- Functie pentru returnarea daca user-ul este logat sau nu
+bool User::isLogged()
+{
+    return this->logged;
+}
+
+// -- Funcie pentru setarea daca user-ul este logat sau nu
+void User::setLogged(bool logged)
+{
+    this->logged = logged;
 }

@@ -12,6 +12,7 @@ void sendMessageToServer(std::string message, socklen_t server_descriptor);
 std::string getInputFromUser();
 std::string getResponseFromServer(socklen_t server_descriptor);
 static void *threadReceiveMessageFromServer(void *arg);
+void showPrompt();
 
 int main(int argc, const char *argv[])
 {
@@ -29,20 +30,19 @@ int main(int argc, const char *argv[])
         std::cerr << "Eroare la crearea thread-ului: " << ec.message() << std::endl;
         exit(1);
     }
-
     // -- Creeam o bucla infinita pentru a trimite mesaje spre serverul
     while (true)
     {
         // -- Afisam prompt-ul pentru comanda
-        std::cout << "$ > ";
 
         // -- Citim comanda de la tastatura
         std::string command = getInputFromUser();
 
         // -- Verificare commanda de exit
-        if (command == "exit")
+        if (command == ":exit")
         {
             IS_USER_DISCONNECTED = true;
+            sendMessageToServer(":logout", client_socket.getFD());
             break;
         }
         else if (command.size() == 0)
@@ -65,6 +65,8 @@ void sendMessageToServer(std::string message, socklen_t server_descriptor)
 // -- Functie pentru citirea comenzii de la tastatura
 std::string getInputFromUser()
 {
+    // -- Afisam prompt-ul pentru comanda
+    showPrompt();
     std::string command;
     std::getline(std::cin, command);
 
@@ -74,8 +76,9 @@ std::string getInputFromUser()
 // -- Functie pentru citirea raspunsului de la server
 std::string getResponseFromServer(socklen_t server_descriptor)
 {
-    char buffer[1024];
-    int read_size = read(server_descriptor, buffer, 1024);
+    char buffer[2048];
+    int read_size = read(server_descriptor, buffer, 2048);
+    buffer[read_size] = '\0';
 
     // -- Verificam daca s-a primit raspuns de la server
     if (IS_USER_DISCONNECTED)
@@ -89,10 +92,14 @@ std::string getResponseFromServer(socklen_t server_descriptor)
         std::cerr << "Eroare la primirea raspunsului de la server: " << ec.message() << std::endl;
         exit(1);
     }
+    else if (read_size == 0)
+    {
+        std::cout << "Serverul a fost inchis!" << std::endl;
+        exit(0);
+    }
 
     // -- Convertim raspunsul primit de la server intr-un string
     std::string response = std::string(buffer, 0, read_size);
-
     return response;
 }
 
@@ -106,10 +113,16 @@ static void *threadReceiveMessageFromServer(void *arg)
     while (true)
     {
         // -- Primim mesajul de la server
-        std::string response = getResponseFromServer(client_socket->getFD());
-
-        // -- Afisam mesajul primit de la server
-        std::cout << "\n$ < " << response << std::endl
-                  << "$ > ";
+        std::string response = ":> " + getResponseFromServer(client_socket->getFD());
+        std::cout << std::endl
+                  << response << std::flush << std::endl
+                  << std::endl;
+        showPrompt();
     }
+}
+
+// -- Functie pentru afisarea proptului
+void showPrompt()
+{
+    std::cout << "-> " << std::flush;
 }

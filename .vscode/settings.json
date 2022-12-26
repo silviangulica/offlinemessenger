@@ -60,6 +60,8 @@
         "variant": "cpp",
         "vector": "cpp",
         "algorithm": "cpp",
-        "concepts": "cpp"
+        "concepts": "cpp",
+        "__tree": "cpp",
+        "map": "cpp"
     }
 }
