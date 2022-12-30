@@ -1,83 +1,112 @@
 #include "socket.hpp"
 
-// -- Constructorul pentru socket de tip ascultare
+// Socket care primeste un parametru
+// Folosit pentru a crea un socket de tip server
 Socket::Socket(int PORT)
 {
-    // -- Crearea socketului
-    this->FD = socket(AF_INET, SOCK_STREAM, 0);
+    // Initializam structura si lungimea
+    bzero(&socket_details, sizeof(socket_details));
+    socket_details_len = sizeof(socket_details);
 
-    // -- Verificam daca s-a creat socketul
-    if (this->FD < 0)
+    // Creaza un socket de tip TCP/IP
+    sockFD = socket(AF_INET, SOCK_STREAM, 0);
+
+    // Verifica daca socketul a fost creat cu succes
+    if (sockFD == -1)
     {
-        std::error_code ec(this->FD, std::generic_category());
-        std::cerr << "Eroare la crearea socketului: " << ec.message() << std::endl;
+        std::cout << "[Eroare]: Nu s-a putut crea socketul" << std::endl;
         exit(1);
     }
-
-    // -- Setam structura de date pentru socket la 0
-    bzero(&this->socket_details, sizeof(this->socket_details));
-
-    // -- Incarcarea structului cu detaliile de conectare la server
-    this->socket_details.sin_family = AF_INET;
-    this->socket_details.sin_port = htons(PORT);
-    this->socket_details.sin_addr.s_addr = INADDR_ANY;
-
-    // -- Facem bind la socket
-    if (bind(this->FD, (struct sockaddr *)&this->socket_details, sizeof(this->socket_details)) < 0)
+    else
     {
-        std::error_code ec(this->FD, std::generic_category());
-        std::cerr << "Eroare la bind: " << ec.message() << std::endl;
-        exit(1);
+        std::cout << "[Info]: Socketul a fost creat cu succes" << std::endl;
     }
 
-    // -- Ascultam pe socket, cu 5 conexiuni in asteptare
-    if (listen(this->FD, 5) < 0)
+    // Seteaza structura sockaddr_in
+    socket_details.sin_family = AF_INET;
+    socket_details.sin_addr.s_addr = htonl(INADDR_ANY);
+    socket_details.sin_port = htons(PORT);
+
+    // Bind la server
+    int bind_rez = bind(sockFD, (sockaddr *)&socket_details, socket_details_len);
+
+    // Verificam eventualele erori ce pot aparea la bind
+    if (bind_rez == -1)
     {
-        std::error_code ec(this->FD, std::generic_category());
-        std::cerr << "Eroare la listen: " << ec.message() << std::endl;
+        std::cout << "[Eroare]: Nu s-a putut face \"bind\" la socket!" << std::endl;
+        close(sockFD);
         exit(1);
+    }
+    else
+    {
+        std::cout << "[Info]: \"Bind\" realizat cu succes! " << std::endl;
+    }
+
+    // Plasam serverul in listen mode
+    int listen_rez = listen(sockFD, 5);
+
+    // Verificam daca putem face listen
+    if (listen_rez == -1)
+    {
+        std::cout << "[Eroare]: Nu am putut plasa serverul in listen mode!" << std::endl;
+        close(sockFD);
+        exit(1);
+    }
+    else
+    {
+        std::cout << "[Info]: Serverul este online si asculta pe PORT-ul: " << PORT << std::endl;
     }
 }
 
-// -- Constructorul pentru socket de tip conectare
-Socket::Socket(int PORT, char IP[16])
+// Socket care primeste 2 parametri
+// Folosit pentru a crea un socket de tip client sau connectare
+Socket::Socket(int PORT, std::string IP)
 {
-    // -- Crearea socketului
-    this->FD = socket(AF_INET, SOCK_STREAM, 0);
+    // Initializam structura si lungimea
+    bzero(&socket_details, sizeof(socket_details));
+    socket_details_len = sizeof(socket_details);
 
-    // -- Verificam daca s-a creat socketul
-    if (this->FD < 0)
+    // Creaza un socket de tip TCP/IP
+    sockFD = socket(AF_INET, SOCK_STREAM, 0);
+
+    // Verifica daca a fost creat socketul cu succes
+    if (sockFD == -1)
     {
-        std::error_code ec(this->FD, std::generic_category());
-        std::cerr << "Eroare la crearea socketului: " << ec.message() << std::endl;
+        std::cout << "[Eroare]: Nu s-a putut crea socketul" << std::endl;
+        exit(1);
+    }
+    else
+    {
+        std::cout << "[Info]: Socketul a fost creat cu succes" << std::endl;
+    }
+
+    // Adaugam detaliile de conectare pentru socketul de client
+    socket_details.sin_family = AF_INET;
+    socket_details.sin_port = htons(PORT);
+
+    // Adaugam IP.c_str() in socket_details.sin_addr.s_addr
+    if (inet_pton(AF_INET, IP.c_str(), &socket_details.sin_addr.s_addr) == -1)
+    {
+        std::cout << "[Error]: Nu pot converti acest IP, IP-ul nu este valid!" << std::endl;
+        close(sockFD);
         exit(1);
     }
 
-    // -- Setam structura de date pentru socket la 0
-    bzero(&this->socket_details, sizeof(this->socket_details));
-
-    // -- Incarcarea structului cu detaliile de conectare la server
-    this->socket_details.sin_family = AF_INET;
-    this->socket_details.sin_port = htons(PORT);
-    this->socket_details.sin_addr.s_addr = inet_addr(IP);
-
-    // -- Facem conexiunea la server
-    if (connect(this->FD, (struct sockaddr *)&this->socket_details, sizeof(this->socket_details)) < 0)
+    // Inceram o connectare la server
+    if (connect(sockFD, (sockaddr *)&socket_details, socket_details_len) == -1)
     {
-        std::error_code ec(this->FD, std::generic_category());
-        std::cerr << "Eroare la connect: " << ec.message() << std::endl;
+        std::cout << "[Error]: Nu ma pot connecta la server! Inchid aplicatia!" << std::endl;
+        close(sockFD);
         exit(1);
+    }
+    else
+    {
+        std::cout << "[Info]: Sunteti connectat cu serverul, folositi prompt-ul de mai jos pentru a interactiona cu serverul, \":help\" pentru ajutor!" << std::endl;
     }
 }
 
-// -- Functie pentru returnarea descriptorului socketului
-socklen_t Socket::getFD()
-{
-    return this->FD;
-}
-
-// -- Deconstructorul pentru socket
+// Deconstructorul clasei
 Socket::~Socket()
 {
-    close(this->FD);
+    close(sockFD);
 }

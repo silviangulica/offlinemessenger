@@ -1,33 +1,43 @@
+//
+//
+//  Socket Class
+//  ------------
+//  Aceasta clasa este folosita pentru a crea un socket de tip TCP/IP.
+//  Sunt 3 tipuri de socketuri pe care clasa o poate crea
+//
+
 #pragma once
 #include <iostream>
 #include <string>
-#include <stdio.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <sys/socket.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/uio.h>
+#include <arpa/inet.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 class Socket
 {
 public:
-    // -- Foloseste pentru a crea un socket de tip ascultare
+    // Socket simplu care nu primeste niciun parametru
+    // Folosit pentru a crea un socket de tip client/acceptare
+    Socket();
+
+    // Socket care primeste un parametru
+    // Folosit pentru a crea un socket de tip server
     Socket(int PORT);
 
-    // -- Foloseste pentru a crea un socket de tip conectare
-    Socket(int PORT, char IP[16]);
+    // Socket care primeste 2 parametri
+    // Folosit pentru a crea un socket de tip client sau connectare
+    Socket(int PORT, std::string IP);
 
-    // -- Functie pentru returnarea descriptorului socketului
-    socklen_t getFD();
-
-    // -- Deconstructor
+    // Destructorul clasei
     ~Socket();
 
 private:
-    socklen_t FD;
+    // File descriptor
+    int sockFD;
+
+    // Detalii despre socket
     struct sockaddr_in socket_details;
+
+    // Lungimea structurii de socket
+    int socket_details_len;
 };
