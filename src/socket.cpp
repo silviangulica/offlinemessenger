@@ -206,6 +206,7 @@ std::string Socket::receiveMessage(socklen_t externFD)
     // Convertim raspunsul la string
     return std::string(buffer, 0, nr_bytes);
 }
+
 // Deconstructorul clasei
 Socket::~Socket()
 {

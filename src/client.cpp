@@ -1,8 +1,9 @@
-#include "src/socket.hpp"
+#include "socket.hpp"
+#include <signal.h>
 
 // Function declarations
 void readFromInput(Socket client);
-void readFromServer(Socket client);
+void readFromServer(Socket client, pid_t childID);
 
 int main()
 {
@@ -14,9 +15,9 @@ int main()
     // 2. Pentru citire de la server
     pid_t child = fork();
     if (child == 0)
-        readFromServer(client);     // Citeste de la server si afiseaza
-    else
         readFromInput(client);      // Citeste de la tastatura si trimite la server.
+    else 
+        readFromServer(client, child);     // Citeste de la server si afiseaza
     return 0;
 }
 
@@ -42,12 +43,18 @@ void readFromInput(Socket client)
 }
 
 // Functi care citeste din server
-void readFromServer(Socket client)
+void readFromServer(Socket client, pid_t childID)
 {
     while(true)
     {
         // Receptionam mesajul de la server
         std::string message = client.receiveMessage();
+
+        // Verificam daca am primit un mesaj gol (conexiun lipsa)
+        if (message.size() == 0) {
+            kill(childID, SIGKILL);
+            exit(1);
+        }
 
         // Afisam mesajul la output, std::flush pentru a nu pastra ce vina dupa std::endl pe buffer
         std::cout << "[]: " << message << std::endl << "-> " << std::flush;
