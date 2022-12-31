@@ -16,3 +16,11 @@
 - [Socket] la care este connectat
 - Status
 
+
+## Class Message
+- destinatar
+- creator
+- continut
+- data
+
+

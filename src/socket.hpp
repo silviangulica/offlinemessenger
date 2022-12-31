@@ -11,14 +11,14 @@
 #include <string>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <unistd.h>
+#include <unistd.h>         // Biblioteca standart C
 
 class Socket
 {
 public:
     // Socket simplu care nu primeste niciun parametru
     // Folosit pentru a crea un socket de tip client/acceptare
-    Socket();
+    Socket(socklen_t serverFD);
 
     // Socket care primeste un parametru
     // Folosit pentru a crea un socket de tip server
@@ -28,12 +28,27 @@ public:
     // Folosit pentru a crea un socket de tip client sau connectare
     Socket(int PORT, std::string IP);
 
+    // Functie pentru a returna FD
+    socklen_t getFD();
+
+    // Functie pentru a trimite pe socket-ul intern
+    void sendMessage(std::string message);
+
+    // Functie pentru a trimite pe un socket extern
+    void sendMessage(socklen_t externFD, std::string message);
+
+    // Functie pentru a receptiona pe socket-ul intern
+    std::string receiveMessage();
+
+    // Functie pentru a receptiona pe socket-ul extern
+    std::string receiveMessage(socklen_t externFD);
+
     // Destructorul clasei
     ~Socket();
 
 private:
     // File descriptor
-    int sockFD;
+    socklen_t sockFD;
 
     // Detalii despre socket
     struct sockaddr_in socket_details;

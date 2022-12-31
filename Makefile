@@ -4,3 +4,6 @@ all: socket.o
 
 socket.o: src/socket.cpp src/socket.hpp
 	g++ -Wall -c src/socket.cpp
+
+clean:
+	rm -f *.o server client

@@ -105,6 +105,107 @@ Socket::Socket(int PORT, std::string IP)
     }
 }
 
+// Socket simplu care nu primeste niciun parametru
+// Folosit pentru a crea un socket de tip client/acceptare
+Socket::Socket(socklen_t serverFD)
+{
+    // Initializam structurile de date
+    bzero(&socket_details, sizeof(socket_details));
+    socklen_t socket_details_len = sizeof(socket_details);
+
+    // Rulam functia de accept
+    this->sockFD = accept(serverFD, (sockaddr *)&socket_details, &socket_details_len);
+
+    // Verificam daca exista o eroare
+    if (sockFD < 0)
+    {
+        std::cout << "[Error]: Nu am putut accepta o noua conexiune!" << std::endl;
+        close(serverFD);
+        exit(1);
+    }
+    else
+    {
+        std::cout << "[Info]: O noua conexiune a fost stabilita pentru socket-ul [" << this->sockFD << "]. " << std::endl;
+    }
+}
+
+// Functie pentru a returna FD
+socklen_t Socket::getFD()
+{
+    return sockFD; //
+}
+
+// Functie pentru a trimite mesaj pe sockedFD intern
+void Socket::sendMessage(std::string message)
+{
+    // Trimitem folosind comanda write pe sockFD
+    write(this->sockFD, message.c_str(), message.size());
+}
+
+// Functie oentru a trimite mesaj pe sockedFD extern
+void Socket::sendMessage(socklen_t externFD, std::string message)
+{
+    // Trimitem folosind comanda write pe un socked extern
+    write(externFD, message.c_str(), message.size());
+}
+
+// Functie pentru a citi un mesaj de pe socket intern
+std::string Socket::receiveMessage()
+{
+    // Declaram o structura pentru mesaj
+    char buffer[2048];
+    int nr_bytes;
+
+    // Citim cu read
+    nr_bytes = read(sockFD, buffer, 2048);
+
+    // Verificam raspunsul
+    if (nr_bytes == 0) {
+        std::cout << "[Error]: Connection lost on [" << sockFD << "]!" << std::endl;
+        close(sockFD);
+        return "";
+    } 
+    else if (nr_bytes < 0) {
+        std::cout << "[Error]: There is a problem if the socket or with the code! I got on socket [" << sockFD << "]!" << std::endl;
+        close(sockFD);
+        exit(1);
+    }
+
+    // Formatam raspunsul
+    buffer[nr_bytes] = 0;
+
+    // Convertim raspunsul la string
+    return std::string(buffer, 0, nr_bytes);
+    
+}
+// Functie pentru a citi un mesaj de pe socket extern
+std::string Socket::receiveMessage(socklen_t externFD)
+{
+    // Declaram o structura pentru mesaj
+    char buffer[2048];
+    int nr_bytes;
+
+    // Citim cu read
+    nr_bytes = read(externFD, buffer, 2048);
+
+    // Verificam raspunsul
+    if (nr_bytes == 0) {
+        std::cout << "[Error]: Connection lost!" << externFD << std::endl;
+        close(externFD);
+    } 
+    else if (nr_bytes < 0) {
+        std::cout << "[Error]: There is a problem if the socket or with the code! " << std::endl;
+        close(externFD);
+        close(sockFD);
+        exit(1);
+    }
+
+    // Formatam raspunsul
+    buffer[nr_bytes] = 0;
+
+    // Convertim raspunsul la string
+    return std::string(buffer, 0, nr_bytes);
+}
 // Deconstructorul clasei
 Socket::~Socket()
 {
