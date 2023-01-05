@@ -31,3 +31,18 @@ void User::setSocket(Socket *socket)
 {
     this->socket = socket;
 }
+
+bool User::isLoggedIn()
+{
+    return this->isLogged;
+}
+
+void User::setLoggedIn(bool isLogged)
+{
+    this->isLogged = isLogged;
+}
+
+Socket* User::getSocket()
+{
+    return this->socket;
+}

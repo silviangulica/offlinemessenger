@@ -31,6 +31,9 @@ public:
     // Functie pentru a returna FD
     socklen_t getFD();
 
+    // Functie pentru a inchide conexiunea
+    void closeConnection();
+
     // Functie pentru a trimite pe socket-ul intern
     void sendMessage(std::string message);
 

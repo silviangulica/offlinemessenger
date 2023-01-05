@@ -57,6 +57,6 @@ void readFromServer(Socket client, pid_t childID)
         }
 
         // Afisam mesajul la output, std::flush pentru a nu pastra ce vina dupa std::endl pe buffer
-        std::cout << "[]: " << message << std::endl << "-> " << std::flush;
+        std::cout << message << std::endl << "-> " << std::flush;
     }
 }

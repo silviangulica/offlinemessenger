@@ -28,7 +28,7 @@ Socket::Socket(int PORT)
     socket_details.sin_port = htons(PORT);
 
     // Bind la server
-    int bind_rez = bind(sockFD, (sockaddr *)&socket_details, socket_details_len);
+    int bind_rez = bind(sockFD, (sockaddr*)&socket_details, socket_details_len);
 
     // Verificam eventualele erori ce pot aparea la bind
     if (bind_rez == -1)
@@ -93,7 +93,7 @@ Socket::Socket(int PORT, std::string IP)
     }
 
     // Inceram o connectare la server
-    if (connect(sockFD, (sockaddr *)&socket_details, socket_details_len) == -1)
+    if (connect(sockFD, (sockaddr*)&socket_details, socket_details_len) == -1)
     {
         std::cout << "[Error]: Nu ma pot connecta la server! Inchid aplicatia!" << std::endl;
         close(sockFD);
@@ -101,7 +101,7 @@ Socket::Socket(int PORT, std::string IP)
     }
     else
     {
-        std::cout << "[Info]: Sunteti connectat cu serverul, folositi prompt-ul de mai jos pentru a interactiona cu serverul, \":help\" pentru ajutor!" << std::endl;
+        std::cout << "[Info]: Sunteti connectat cu serverul, folositi prompt-ul de mai jos pentru a interactiona cu serverul, \":help\" pentru ajutor!" << std::endl << std::endl;
     }
 }
 
@@ -114,7 +114,7 @@ Socket::Socket(socklen_t serverFD)
     socklen_t socket_details_len = sizeof(socket_details);
 
     // Rulam functia de accept
-    this->sockFD = accept(serverFD, (sockaddr *)&socket_details, &socket_details_len);
+    this->sockFD = accept(serverFD, (sockaddr*)&socket_details, &socket_details_len);
 
     // Verificam daca exista o eroare
     if (sockFD < 0)
@@ -164,7 +164,7 @@ std::string Socket::receiveMessage()
         std::cout << "[Error]: Connection lost on [" << sockFD << "]!" << std::endl;
         close(sockFD);
         return "";
-    } 
+    }
     else if (nr_bytes < 0) {
         std::cout << "[Error]: There is a problem if the socket or with the code! I got on socket [" << sockFD << "]!" << std::endl;
         close(sockFD);
@@ -176,7 +176,7 @@ std::string Socket::receiveMessage()
 
     // Convertim raspunsul la string
     return std::string(buffer, 0, nr_bytes);
-    
+
 }
 // Functie pentru a citi un mesaj de pe socket extern
 std::string Socket::receiveMessage(socklen_t externFD)
@@ -192,7 +192,7 @@ std::string Socket::receiveMessage(socklen_t externFD)
     if (nr_bytes == 0) {
         std::cout << "[Error]: Connection lost!" << externFD << std::endl;
         close(externFD);
-    } 
+    }
     else if (nr_bytes < 0) {
         std::cout << "[Error]: There is a problem if the socket or with the code! " << std::endl;
         close(externFD);
@@ -209,6 +209,12 @@ std::string Socket::receiveMessage(socklen_t externFD)
 
 // Deconstructorul clasei
 Socket::~Socket()
+{
+    close(sockFD);
+}
+
+// Functie care inchide conexiunea
+void Socket::closeConnection()
 {
     close(sockFD);
 }
