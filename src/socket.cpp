@@ -153,11 +153,11 @@ void Socket::sendMessage(socklen_t externFD, std::string message)
 std::string Socket::receiveMessage()
 {
     // Declaram o structura pentru mesaj
-    char buffer[2048];
+    char buffer[MSG_SIZE];
     int nr_bytes;
 
     // Citim cu read
-    nr_bytes = read(sockFD, buffer, 2048);
+    nr_bytes = read(sockFD, buffer, MSG_SIZE);
 
     // Verificam raspunsul
     if (nr_bytes == 0) {
@@ -182,11 +182,11 @@ std::string Socket::receiveMessage()
 std::string Socket::receiveMessage(socklen_t externFD)
 {
     // Declaram o structura pentru mesaj
-    char buffer[2048];
+    char buffer[MSG_SIZE];
     int nr_bytes;
 
     // Citim cu read
-    nr_bytes = read(externFD, buffer, 2048);
+    nr_bytes = read(externFD, buffer, MSG_SIZE);
 
     // Verificam raspunsul
     if (nr_bytes == 0) {

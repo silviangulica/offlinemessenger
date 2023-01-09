@@ -1,6 +1,6 @@
 #include "user.hpp"
 
-User::User(std::string username, std::string password, Socket *socket)
+User::User(std::string username, std::string password, Socket* socket)
 {
     this->username = username;
     this->password = password;
@@ -27,7 +27,7 @@ void User::setPassword(std::string password)
     this->password = password;
 }
 
-void User::setSocket(Socket *socket)
+void User::setSocket(Socket* socket)
 {
     this->socket = socket;
 }
@@ -45,4 +45,24 @@ void User::setLoggedIn(bool isLogged)
 Socket* User::getSocket()
 {
     return this->socket;
+}
+
+std::string User::getUserColor()
+{
+    return this->userColor;
+}
+
+void User::setUserColor(std::string color)
+{
+    this->userColor = color;
+}
+
+void User::setPersonalStatus(std::string status)
+{
+    this->personalStatus = status;
+}
+
+std::string User::getPersonalStatus()
+{
+    return this->personalStatus;
 }

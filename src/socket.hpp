@@ -13,6 +13,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>         // Biblioteca standart C
 
+#define MSG_SIZE 32768      // Dimensiunea maxima a unui mesaj, 32KB, sustine aproximativ 300 de utilizatori, probabil mai multi
+
 class Socket
 {
 public:

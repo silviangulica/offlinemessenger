@@ -66,6 +66,10 @@
         "variant": "cpp",
         "vector": "cpp",
         "algorithm": "cpp",
-        "concepts": "cpp"
+        "concepts": "cpp",
+        "list": "cpp",
+        "numeric": "cpp",
+        "queue": "cpp",
+        "unordered_set": "cpp"
     }
 }

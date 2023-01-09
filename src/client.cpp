@@ -16,7 +16,7 @@ int main()
     pid_t child = fork();
     if (child == 0)
         readFromInput(client);      // Citeste de la tastatura si trimite la server.
-    else 
+    else
         readFromServer(client, child);     // Citeste de la server si afiseaza
     return 0;
 }
@@ -25,7 +25,7 @@ int main()
 void readFromInput(Socket client)
 {
     // Pentru a citi de la tastatura, afisam un prompt si asteptam un mesaj ceva
-    while(true)
+    while (true)
     {
         std::cout << "-> ";
 
@@ -36,6 +36,11 @@ void readFromInput(Socket client)
         // Verificam daca clientul a apasat "\n"
         if (message.size() == 0)
             continue;
+        if (message == ":clear")
+        {
+            system("clear");
+            continue;
+        }
 
         // Trimitem mesajul la server
         client.sendMessage(message);
@@ -45,7 +50,7 @@ void readFromInput(Socket client)
 // Functi care citeste din server
 void readFromServer(Socket client, pid_t childID)
 {
-    while(true)
+    while (true)
     {
         // Receptionam mesajul de la server
         std::string message = client.receiveMessage();
@@ -57,6 +62,6 @@ void readFromServer(Socket client, pid_t childID)
         }
 
         // Afisam mesajul la output, std::flush pentru a nu pastra ce vina dupa std::endl pe buffer
-        std::cout << message << std::endl << "-> " << std::flush;
+        std::cout << message.c_str() << std::endl << "-> " << std::flush;
     }
 }
